@@ -1,0 +1,36 @@
+@isTest
+public with sharing class MaintenanceRequestHelperTest {
+    // implement scheduled code here
+    
+    @isTest static void positive()
+    {
+        
+        List<Case> cslist=new List<Case>();
+        Test.startTest();
+        Vehicle__c vehicle=new Vehicle__c(Name='ta',Air_Conditioner__c=true,Model__c='23Test');
+        insert vehicle;
+        Product2 equipment=new Product2(Name='tire',cost__c=100,Current_Inventory__c =10,Replacement_Part__c=true,
+                                        Warehouse_SKU__c ='test',Lifespan_Months__c =10,Maintenance_Cycle__c=10);
+        insert equipment;
+        for (integer i=0;i<200;i++)
+        {
+            Case cs=new Case();
+            cs.Status='New';
+            cs.Vehicle__c=vehicle.id;
+            cs.Equipment__c=equipment.id;
+            cs.Type='Repair';
+            cslist.add(cs);
+            }
+         Database.insert(cslist);
+        List<Case> newcaselist=new List<Case>();
+        for(Case newmaintain:cslist)
+        {
+            newmaintain.Status='Closed';            
+             newcaselist.add(newmaintain);        
+        }
+        Database.update(newcaselist);
+        System.assert(cslist!=Null);
+        MaintenanceRequestHelper.updateWorkOrders(newcaselist);
+        Test.stopTest();
+    }
+    }
