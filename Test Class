@@ -33,4 +33,48 @@ public with sharing class MaintenanceRequestHelperTest {
         MaintenanceRequestHelper.updateWorkOrders(newcaselist);
         Test.stopTest();
     }
+    @isTest static void test2()
+    {
+       Vehicle__c vehicle=new Vehicle__c(Name='te',Air_Conditioner__c=true,Model__c='21Test');
+        insert vehicle;
+        Product2 equipment=new Product2(Name='tire2',cost__c=100,Current_Inventory__c =10,Replacement_Part__c=true,
+                                        Warehouse_SKU__c ='test2',Lifespan_Months__c =10,Maintenance_Cycle__c=10);
+        insert equipment; 
+        Test.startTest();
+        Case cs=new Case();
+            cs.Status='New';
+            cs.Vehicle__c=vehicle.id;
+            cs.Equipment__c=equipment.id;
+            cs.Type='Repair';
+        insert cs;
+        cs.Status='closed';
+        update cs;
+        Case cs2=new Case();
+        cs2.Equipment__c=equipment.id;
+        cs2.Status='New';
+        cs2.Type='Repair';
+        insert cs2;
+        cs2.Status='Closed';
+        update cs2;
+        Equipment_Maintenance_Item__c emi=new Equipment_Maintenance_Item__c();
+        emi.Maintenance_Request__c=cs.Id;
+        emi.Equipment__c=equipment.id;
+        emi.Quantity__c=3;
+        insert emi;
+        Equipment_Maintenance_Item__c emi1=new Equipment_Maintenance_Item__c();
+        emi1.Maintenance_Request__c=cs.Id;
+        emi1.Equipment__c=equipment.id;
+        emi1.Quantity__c=3;
+        insert emi1;
+        Test.stopTest();
+        List<Case> cslist=new List<Case>();
+        List<Case> cslist1=new List<Case>();
+        cslist.add(cs);
+        cslist1.add(cs2);
+        System.assert(cslist!=Null);
+        MaintenanceRequestHelper.getMaintainanceItems(cslist);
+         //MaintenanceRequestHelper.getMaintainanceItems(cslist1);
     }
+
+    
+}
