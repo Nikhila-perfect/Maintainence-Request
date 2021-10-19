@@ -1,0 +1,50 @@
+public with sharing class MaintenanceRequestHelper {
+    public static void updateWorkOrders(List<Case> caseList) {
+        List<case> newCases = new List<Case>();
+        Map<String,Integer> result=getDueDate(caseList);
+        list<Equipment_Maintenance_Item__c> itemsListToinsert= new list<Equipment_Maintenance_Item__c>();
+      Map<String,list<Equipment_Maintenance_Item__c>> resultItmes=getMaintainanceItems(caseList);
+        for(Case c : caseList){
+            if(c.status=='closed')
+                if(c.type=='Repair' || c.type=='Routine Maintenance'){
+                    Case newCase = new Case();
+                    newCase.Status='New';
+                    newCase.Origin='web';
+                    newCase.Type='Routine Maintenance';
+                    newCase.Subject='Routine Maintenance of Vehicle';
+                    newCase.Vehicle__c=c.Vehicle__c;
+                    newCase.Date_Reported__c=Date.today();
+                    newcase.Cloned_Case_Id__c=c.Id;
+                    if(result.get(c.Id)!=null)
+                     newCase.Date_Due__c=Date.today()+result.get(c.Id);
+                    else
+                        newCase.Date_Due__c=Date.today();
+                    newCases.add(newCase);
+                }
+        }        
+       if(newCases.size()>0)
+       {      
+           insert newCases; 
+           
+           for(Case c : newCases){
+             List<Equipment_Maintenance_Item__c> temp =  resultItmes.get(c.Cloned_Case_Id__c);
+               if(temp !=null){
+                    for(Equipment_Maintenance_Item__c row:temp){
+                    Equipment_Maintenance_Item__c newitem = new Equipment_Maintenance_Item__c();
+                        newitem.Equipment__c=row.Equipment__c;
+                        newitem.Maintenance_Request__c= c.Id;
+                        newitem.Quantity__c= row.Quantity__c;  
+                        itemsListToinsert.add(newitem);
+                        
+                    }
+               }
+               
+           }
+           
+           
+       }
+        
+       if(itemsListToinsert.size()>0)
+           insert itemsListToinsert;
+    }
+}
